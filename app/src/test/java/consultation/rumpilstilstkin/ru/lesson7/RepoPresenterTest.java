@@ -18,6 +18,7 @@ import consultation.rumpilstilstkin.ru.lesson7.presenter.RepsView;
 import consultation.rumpilstilstkin.ru.lesson7.presenter.RepsView$$State;
 import io.reactivex.Single;
 
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -31,8 +32,8 @@ public class RepoPresenterTest {
     RepsView$$State repsViewState;
     @Mock
     private RepsView view;
-
-    @Mock private NetApiClientInterface client;
+    @Mock
+    private NetApiClientInterface client;
 
     @Before
     public void setUp() {
@@ -52,5 +53,24 @@ public class RepoPresenterTest {
         verify(view).showRepoList(list);
         verify(view).hideLoading();
         verifyNoMoreInteractions(view);
+    }
+
+    @Test
+    public void testEmptyList(){
+        List<RepsModel> list = new ArrayList<>();
+        when(client.getReps()).thenReturn(Single.just(list));
+        presenter.attachView(view);
+        presenter.setViewState(repsViewState);
+        verify(view).showLoading();
+        verify(view).showEmptyState();
+        verify(view).hideLoading();
+        verifyNoMoreInteractions(view);
+    }
+
+    @Test
+    public void testExceptionList(){
+        Exception exception = new Exception ("Exception");
+        doThrow(exception).when(client).getReps();
+        verify(client).getReps();
     }
 }
